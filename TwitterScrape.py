@@ -14,7 +14,7 @@ response = client.search_recent_tweets(
     user_fields=['username', 'public_metrics', 'description', 'location'],
     tweet_fields=['created_at', 'geo', 'public_metrics', 'text', 'id'],
     expansions='author_id',
-    result_type='popular',
+    sort_order='relevancy',
     max_results=10
 )
 likes = {}
