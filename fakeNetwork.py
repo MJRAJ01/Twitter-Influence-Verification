@@ -40,18 +40,9 @@ for i in range(network.number_of_nodes()):
         if random.random() < p_edge:
             network.add_edge(i, j)
 node_sizes = []
-for i in network.nodes:
-    if network.nodes[i]["verified"] is True:
-        # node_sizes.append(network.nodes[i]["followers"] // 1000)
-        node_sizes.append(350)
-    elif network.nodes[i]["followers"] >= 10000:
-        # node_sizes.append(network.nodes[i]["followers"] // 500)
-        node_sizes.append(250)
-    elif 1000 <= network.nodes[i]["followers"] <= 10000:
-        # node_sizes.append(network.nodes[i]["followers"] // 100)
-        node_sizes.append(150)
-    else:
-        # node_sizes.append(network.nodes[i]["followers"] // 50)
-        node_sizes.append(50)
+centralities = nx.eigenvector_centrality(network)
+for i in range(len(centralities)):
+    node_sizes.append(centralities[i] * 1000)
+
 nx.draw(network, node_size=node_sizes)
 plt.show()
