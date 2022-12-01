@@ -1,5 +1,4 @@
 import random
-
 import networkx as nx
 from matplotlib import pyplot as plt
 
@@ -24,7 +23,7 @@ nx.set_node_attributes(network, attrs)
 p_edge = 0.1
 for i in range(network.number_of_nodes()):
     for j in range(i + 1, network.number_of_nodes()):
-        if network.nodes[i]["verified"] == True or network.nodes[j]["verified"] == True:
+        if network.nodes[i]["verified"] is True or network.nodes[j]["verified"] is True:
             p_edge = 0.95
         elif network.nodes[i]["followers"] >= 1000 or network.nodes[i]["followers"] >= 1000:
             p_edge = 0.5
