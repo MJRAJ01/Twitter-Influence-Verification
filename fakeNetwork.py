@@ -37,7 +37,9 @@ for i in range(network.number_of_nodes()):
         else:
             p_edge = 0.1
 
-        if random.random() < p_edge:
+        if random.random() < p_edge \
+                and len(network.edges(i)) < network.nodes[i]["followers"] \
+                and len(network.edges(j)) < network.nodes[j]["followers"]:
             network.add_edge(i, j)
 node_sizes = []
 colors = []
@@ -47,5 +49,5 @@ for i in range(len(centralities)):
     node_sizes.append(centralities[i] * 1000)
     colors.append(network.nodes[i]["color"])
 
-nx.draw(network, node_size=node_sizes, node_color=colors)
+nx.draw(network, node_size=node_sizes, node_color=colors, width=0.15)
 plt.show()
