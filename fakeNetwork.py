@@ -48,6 +48,6 @@ centralities = nx.eigenvector_centrality(network)
 for i in range(len(centralities)):
     node_sizes.append(centralities[i] * 1000)
     colors.append(network.nodes[i]["color"])
-
-nx.draw(network, node_size=node_sizes, node_color=colors, width=0.15)
+pos = nx.spring_layout(network, k=1, iterations=25)
+nx.draw(network, pos, node_size=node_sizes, node_color=colors, width=0.15)
 plt.show()
