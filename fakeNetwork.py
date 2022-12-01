@@ -41,6 +41,7 @@ for i in range(network.number_of_nodes()):
             network.add_edge(i, j)
 node_sizes = []
 colors = []
+# if we switch to directed graph we should use katz or pagerank
 centralities = nx.eigenvector_centrality(network)
 for i in range(len(centralities)):
     node_sizes.append(centralities[i] * 1000)
