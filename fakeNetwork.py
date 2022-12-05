@@ -60,13 +60,13 @@ for i in range(1000):
     if random.random() < p_followers:
         if random.random() < p_followers:
             if random.random() < p_followers:
-                attrs[i] = {"id": i, "followers": rand1, "color": "blue"}
+                attrs[i] = {"id": i, "followers": rand1, "color": "green"}
                 network.add_node(i)
             else:
                 attrs[i] = {"id": i, "followers": rand2, "color": "yellow"}
                 network.add_node(i)
         else:
-            attrs[i] = {"id": i, "followers": rand3, "color": "green"}
+            attrs[i] = {"id": i, "followers": rand3, "color": "orange"}
             network.add_node(i)
     else:
         attrs[i] = {"id": i, "followers": rand4, "color": "red"}
@@ -97,10 +97,9 @@ colors = []
 # if we switch to directed graph we should use katz or pagerank
 centralities = nx.eigenvector_centrality(network)
 for i in range(len(centralities)):
-    node_sizes.append(centralities[i] * 1000)
+    node_sizes.append(centralities[i] * 100)
     colors.append(network.nodes[i]["color"])
-pos = nx.spring_layout(network, k=1, iterations=25)
-nx.draw(network, pos, node_size=node_sizes, node_color=colors, width=0.025)
+nx.draw(network, node_size=node_sizes, node_color=colors, width=0.025)
 plt.show()
 
 # real = nx.Graph()
