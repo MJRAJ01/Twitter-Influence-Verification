@@ -1,56 +1,14 @@
 import random
+from collections import Counter
+import matplotlib.pyplot as plt
 import networkx as nx
-from matplotlib import pyplot as plt
+import numpy as np
+import pandas as pd
+from numpy.ma import log10
 
-
-# def readFromFile(filename, graph):
-#     file = open(filename, "r")
-#     ids = {}
-#     real_attrs = {}
-#     while True:
-#         line = file.readline()
-#         if line.startswith(","):
-#             continue
-#         if not line:
-#             break
-#
-#         vals = line.split(",")
-#         userid = int(vals[2])
-#         follower = int(float(vals[3]))
-#         followerCount = int(float(vals[4]))
-#         if ids.get(follower) is None:
-#             ids[follower] = False
-#         if ids.get(userid) is None:
-#             if ids.get(userid + 1) is not None:
-#                 userid += 1
-#             elif ids.get(userid - 1) is not None:
-#                 userid -= 1
-#         ids[userid] = True
-#
-#         graph.add_edge(userid, follower)
-#         real_attrs[userid] = {"id": userid, "followers": followerCount}
-#         if str(vals[5]) == "True":
-#             real_attrs[userid]["verified"] = True
-#         else:
-#             real_attrs[userid]["verified"] = False
-#
-#         # Default data for users we haven't gathered data on
-#         p = 0.998
-#         if ids[follower] == False:
-#             if random.random() < p:
-#                 real_attrs[follower] = {"id": follower, "followers": 700, "verified": False}
-#             else:
-#                 real_attrs[follower] = {"id": follower, "followers": 50000, "verified": True}
-#     count = 0
-#     for i in real_attrs:
-#         if real_attrs[i]["followers"] != 700 and real_attrs[i]["followers"] != 50000:
-#             print(real_attrs[i]["followers"])
-#             count += 1
-#     print(f"Count: {count}")
-#     return real_attrs
 
 def fake_network():
-    network = nx.Graph()
+    network = nx.DiGraph()
     attrs = {}
     for i in range(1000):
         rand1 = random.randint(10, 1000)
@@ -85,34 +43,97 @@ def fake_network():
     nx.set_node_attributes(network, attrs)
     p_edge = 0.1
     for i in range(network.number_of_nodes()):
-        for j in range(i + 1, network.number_of_nodes()):
-            if network.nodes[i]["followers"] >= 50000 or network.nodes[i]["followers"] >= 50000:
+        for j in range(network.number_of_nodes()):
+            if network.nodes[i]["followers"] >= 50000 and network.nodes[j]["followers"] >= 50000:
+                p_edge = 0.5
+                if random.random() < p_edge \
+                        and len(network.in_edges(i)) < network.nodes[i]["followers"] \
+                        and len(network.in_edges(j)) < network.nodes[j]["followers"]:
+                    network.add_edge(j, i)
+                    network.add_edge(i, j)
+            elif network.nodes[i]["followers"] >= 50000 and network.nodes[j]["followers"] >= 10000:
                 p_edge = 0.25
-            elif network.nodes[i]["followers"] >= 10000 or network.nodes[i]["followers"] >= 10000:
-                p_edge = 0.1
-            elif network.nodes[i]["followers"] >= 1000 or network.nodes[i]["followers"] >= 1000:
-                p_edge = 0.05
+                if random.random() < p_edge \
+                        and len(network.in_edges(i)) < network.nodes[i]["followers"] \
+                        and len(network.in_edges(j)) < network.nodes[j]["followers"]:
+                    network.add_edge(j, i)
+                    network.add_edge(i, j)
+            elif network.nodes[i]["followers"] >= 10000 and network.nodes[j]["followers"] >= 10000:
+                p_edge = 0.2
+                if random.random() < p_edge \
+                        and len(network.in_edges(i)) < network.nodes[i]["followers"] \
+                        and len(network.in_edges(j)) < network.nodes[j]["followers"]:
+                    network.add_edge(j, i)
+                    network.add_edge(i, j)
             else:
-                p_edge = 0.025
+                if network.nodes[i]["followers"] >= 50000:
+                    p_edge = 0.15
+                elif network.nodes[i]["followers"] >= 10000:
+                    p_edge = 0.075
+                elif network.nodes[i]["followers"] >= 1000:
+                    p_edge = 0.025
+                else:
+                    p_edge = 0.01
 
-            if random.random() < p_edge \
-                    and len(network.edges(i)) < network.nodes[i]["followers"] \
-                    and len(network.edges(j)) < network.nodes[j]["followers"]:
-                network.add_edge(i, j)
+                if random.random() < p_edge \
+                        and len(network.in_edges(i)) < network.nodes[i]["followers"]:
+                    network.add_edge(j, i)
     return network
 
 
-network = fake_network()
-node_sizes = []
-colors = []
-# if we switch to directed graph we should use katz or pagerank
-centralities = nx.eigenvector_centrality(network)
-for i in range(len(centralities)):
-    node_sizes.append(centralities[i] * 100)
-    colors.append(network.nodes[i]["color"])
-nx.draw(network, node_size=node_sizes, node_color=colors, width=0.025)
-plt.show()
+def drop_zeros(a_list):
+    return [i for i in a_list if i > 0]
 
-# real = nx.Graph()
-# real_attrs = readFromFile("hedden_network_with_followers_verified.csv", real)
-nx.write_gexf(network, 'fakeNetwork.gexf')
+
+def log_binning(counter_dict, bin_count=35):
+    cdk = list(counter_dict.keys())
+    cdv = list(counter_dict.values())
+    max_x = log10(max(cdk))
+    max_y = log10(max(cdv))
+    max_base = max([max_x, max_y])
+    min_x = log10(min(drop_zeros(cdk)))
+    bins = np.logspace(min_x, max_base, num=bin_count)
+    bin_means_y = (np.histogram(cdk, bins, weights=cdv)[0] / np.histogram(cdk, bins)[0])
+    bin_means_x = (np.histogram(cdk, bins, weights=cdk)[0] / np.histogram(cdk, bins)[0])
+
+    return bin_means_x, bin_means_y
+
+
+def plot(graph, name):
+    c = nx.degree_centrality(graph)
+    c2 = dict(Counter(c.values()))
+    x, y = log_binning(c2, 50)
+    plt.xscale('log')
+    plt.yscale('log')
+    plt.scatter(x, y, c='r', marker='s', s=50)
+    plt.scatter(c2.keys(), c2.values(), c='b', marker='x')
+    plt.xlim((1e-3, 1))
+    plt.ylim((0.5, 1e3))
+    plt.title(name)
+    plt.xlabel('Connections (normalized)')
+    plt.ylabel('Frequency')
+    plt.show()
+
+
+dejan = nx.read_gml("Scraping/Dejan-Full-Node-Info.gml")
+plot(dejan, "Dejan Network")
+
+network = fake_network()
+nx.write_gml(network, "fakeNetwork.gml")
+# node_sizes = []
+# colors = []
+# # if we switch to directed graph we should use katz or pagerank
+# centralities = nx.pagerank(network)
+# for i in range(len(centralities)):
+#     node_sizes.append(centralities[i] * 10000)
+#     colors.append(network.nodes[i]["color"])
+# nx.draw(network, node_size=node_sizes, node_color=colors, width=0.025, arrowsize=0.01)
+# plt.show()
+#
+# plot(network, "Artificial Network")
+
+hedden = nx.read_gml("Scraping/Hedden.gml")
+plot(hedden, "Hedden")
+
+mccormick = nx.read_gml("Scraping/McCormick.gml")
+plot(mccormick, "McCormick")
