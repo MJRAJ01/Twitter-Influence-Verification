@@ -30,16 +30,16 @@ def fake_network():
         else:
             attrs[i] = {"id": i, "followers": rand4, "color": "red"}
             network.add_node(i)
-        if attrs[i]["followers"] < 42000:
-            if random.random() < 0.998:
-                attrs[i]["verified"] = False
-            else:
-                attrs[i]["verified"] = True
+        # if attrs[i]["followers"] < 42000:
+        #     if random.random() < 0.5:
+        #         attrs[i]["verified"] = False
+        #     else:
+        #         attrs[i]["verified"] = True
+        # else:
+        if random.random() < 0.50:
+            attrs[i]["verified"] = False
         else:
-            if random.random() < 0.50:
-                attrs[i]["verified"] = False
-            else:
-                attrs[i]["verified"] = True
+            attrs[i]["verified"] = True
     nx.set_node_attributes(network, attrs)
     p_edge = 0.1
     for i in range(network.number_of_nodes()):
