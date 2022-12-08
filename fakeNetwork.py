@@ -30,36 +30,36 @@ def fake_network():
         else:
             attrs[i] = {"id": i, "followers": rand4, "color": "red"}
             network.add_node(i)
-        # if attrs[i]["followers"] < 42000:
-        #     if random.random() < 0.5:
-        #         attrs[i]["verified"] = False
-        #     else:
-        #         attrs[i]["verified"] = True
-        # else:
-        if random.random() < 0.50:
-            attrs[i]["verified"] = False
+        if attrs[i]["followers"] < 42000:
+            if random.random() < 0.998:
+                attrs[i]["verified"] = False
+            else:
+                attrs[i]["verified"] = True
         else:
-            attrs[i]["verified"] = True
+            if random.random() < 0.50:
+                attrs[i]["verified"] = False
+            else:
+                attrs[i]["verified"] = True
     nx.set_node_attributes(network, attrs)
     p_edge = 0.1
     for i in range(network.number_of_nodes()):
         for j in range(network.number_of_nodes()):
             if network.nodes[i]["followers"] >= 50000 and network.nodes[j]["followers"] >= 50000:
-                p_edge = 0.5
-                if random.random() < p_edge \
-                        and len(network.in_edges(i)) < network.nodes[i]["followers"] \
-                        and len(network.in_edges(j)) < network.nodes[j]["followers"]:
-                    network.add_edge(j, i)
-                    network.add_edge(i, j)
-            elif network.nodes[i]["followers"] >= 50000 and network.nodes[j]["followers"] >= 10000:
                 p_edge = 0.25
                 if random.random() < p_edge \
                         and len(network.in_edges(i)) < network.nodes[i]["followers"] \
                         and len(network.in_edges(j)) < network.nodes[j]["followers"]:
                     network.add_edge(j, i)
                     network.add_edge(i, j)
+            elif network.nodes[i]["followers"] >= 50000 and network.nodes[j]["followers"] >= 10000:
+                p_edge = 0.15
+                if random.random() < p_edge \
+                        and len(network.in_edges(i)) < network.nodes[i]["followers"] \
+                        and len(network.in_edges(j)) < network.nodes[j]["followers"]:
+                    network.add_edge(j, i)
+                    network.add_edge(i, j)
             elif network.nodes[i]["followers"] >= 10000 and network.nodes[j]["followers"] >= 10000:
-                p_edge = 0.2
+                p_edge = 0.1
                 if random.random() < p_edge \
                         and len(network.in_edges(i)) < network.nodes[i]["followers"] \
                         and len(network.in_edges(j)) < network.nodes[j]["followers"]:
@@ -67,13 +67,13 @@ def fake_network():
                     network.add_edge(i, j)
             else:
                 if network.nodes[i]["followers"] >= 50000:
-                    p_edge = 0.15
+                    p_edge = 0.05
                 elif network.nodes[i]["followers"] >= 10000:
-                    p_edge = 0.075
-                elif network.nodes[i]["followers"] >= 1000:
                     p_edge = 0.025
-                else:
+                elif network.nodes[i]["followers"] >= 1000:
                     p_edge = 0.01
+                else:
+                    p_edge = 0.005
 
                 if random.random() < p_edge \
                         and len(network.in_edges(i)) < network.nodes[i]["followers"]:
@@ -120,17 +120,17 @@ plot(dejan, "Dejan Network")
 
 network = fake_network()
 nx.write_gml(network, "fakeNetwork.gml")
-# node_sizes = []
-# colors = []
-# # if we switch to directed graph we should use katz or pagerank
-# centralities = nx.pagerank(network)
-# for i in range(len(centralities)):
-#     node_sizes.append(centralities[i] * 10000)
-#     colors.append(network.nodes[i]["color"])
-# nx.draw(network, node_size=node_sizes, node_color=colors, width=0.025, arrowsize=0.01)
-# plt.show()
-#
-# plot(network, "Artificial Network")
+node_sizes = []
+colors = []
+# if we switch to directed graph we should use katz or pagerank
+centralities = nx.pagerank(network)
+for i in range(len(centralities)):
+    node_sizes.append(centralities[i] * 5000)
+    colors.append(network.nodes[i]["color"])
+nx.draw(network, node_size=node_sizes, node_color=colors, width=0.05, arrowsize=0.05)
+plt.show()
+
+plot(network, "Artificial Network")
 
 hedden = nx.read_gml("Scraping/Hedden.gml")
 plot(hedden, "Hedden")
